@@ -1,0 +1,17 @@
+{
+	"schemaVersion": 1,
+	"id": "hermes-core",
+	"version": "${version}",
+	"name": "Hermes Core",
+	"description": "Constants and instance info functionality for Hermes",
+	"authors": [
+		"DuncanRuns"
+	],
+	"license": "CC0-1.0",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"me.duncanruns.hermes.core.HermesCore"
+		]
+	}
+}
