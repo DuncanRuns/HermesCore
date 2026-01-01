@@ -5,6 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 
+import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -44,6 +45,29 @@ public class HermesCore implements ModInitializer {
         } else {
             return Paths.get(System.getProperty("user.home"), "MCSRHermes");
         }
+    }
+
+    public static long getProcessId() {
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        int atIndex = jvmName.indexOf('@');
+        if (atIndex > 0) {
+            try {
+                return Long.parseLong(jvmName.substring(0, atIndex));
+            } catch (NumberFormatException e) {
+                // Unexpected format, fallback
+            }
+        }
+        throw new IllegalStateException("Unable to determine process ID from JVM name: " + jvmName);
+    }
+
+    public static long tryGetProcessId() {
+        long pid;
+        try {
+            pid = getProcessId();
+        } catch (Exception e) {
+            pid = -1;
+        }
+        return pid;
     }
 
     @Override

@@ -8,12 +8,13 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.management.ManagementFactory;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public final class InstanceInfo {
     public static final Path GLOBAL_FOLDER = HermesCore.GLOBAL_HERMES_FOLDER.resolve("instances");
@@ -33,7 +34,7 @@ public final class InstanceInfo {
     }
 
     private static void createInstanceInfoFiles() {
-        long pid = getPid();
+        long pid = HermesCore.tryGetProcessId();
         String instanceJson = getInstanceInfoJson(pid);
         writeAndLock(getFilePath(GLOBAL_FOLDER, pid), instanceJson);
         writeAndLock(getFilePath(LOCAL_FOLDER, pid), instanceJson);
@@ -90,29 +91,6 @@ public final class InstanceInfo {
         return folder.resolve(fileName + ".json");
     }
 
-    public static long getProcessId() {
-        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-        int atIndex = jvmName.indexOf('@');
-        if (atIndex > 0) {
-            try {
-                return Long.parseLong(jvmName.substring(0, atIndex));
-            } catch (NumberFormatException e) {
-                // Unexpected format, fallback
-            }
-        }
-        throw new IllegalStateException("Unable to determine process ID from JVM name: " + jvmName);
-    }
-
-    private static long getPid() {
-        long pid;
-        try {
-            pid = getProcessId();
-        } catch (Exception e) {
-            pid = -1;
-        }
-        return pid;
-    }
-
     private static void ensureGlobalFolder() {
         if (!Files.exists(GLOBAL_FOLDER)) {
             try {
@@ -133,11 +111,13 @@ public final class InstanceInfo {
         }
     }
 
+    @SuppressWarnings("unused")
     public static void setWorldLogPath(Path worldLogPath) {
         if (InstanceInfo.worldLogPath != null) throw new IllegalStateException("World log path already set");
         InstanceInfo.worldLogPath = worldLogPath;
     }
 
+    @SuppressWarnings("unused")
     public static void addDisabledFeature(String feature) {
         if (disabledFeatures.contains(feature)) return;
         disabledFeatures.add(feature);
