@@ -7,6 +7,7 @@
 	"authors": [
 		"DuncanRuns"
 	],
+	"icon": "assets/hermes-core/icon.png",
 	"license": "CC0-1.0",
 	"environment": "*",
 	"entrypoints": {
