@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.ModList;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -65,16 +65,16 @@ public final class InstanceInfo {
         if (pid != -1) instanceJson.addProperty("pid", pid);
         if (worldLogPath != null) instanceJson.add("world_log", HermesCore.pathToJsonObject(worldLogPath));
         instanceJson.addProperty("is_server", !HermesCore.IS_CLIENT);
-        instanceJson.addProperty("game_dir", FabricLoader.getInstance().getGameDir().toAbsolutePath().toString());
-        instanceJson.addProperty("game_version", FabricLoader.getInstance().getModContainer("minecraft").orElseThrow(() -> new IllegalStateException("Failed to find minecraft version via fabric loader")).getMetadata().getVersion().getFriendlyString());
+        instanceJson.addProperty("game_dir", HermesCore.GAME_DIR.toString());
+        instanceJson.addProperty("game_version", ModList.get().getModContainerById("minecraft").map(m -> m.getModInfo().getVersion().toString()).orElse("unknown"));
         instanceJson.add("disabled_features", GSON.toJsonTree(disabledFeatures));
 
         JsonArray modsArray = new JsonArray();
-        FabricLoader.getInstance().getAllMods().forEach(modContainer -> {
+        ModList.get().getMods().forEach(iModInfo -> {
             JsonObject modObject = new JsonObject();
-            modObject.addProperty("name", modContainer.getMetadata().getName());
-            modObject.addProperty("id", modContainer.getMetadata().getId());
-            modObject.addProperty("version", modContainer.getMetadata().getVersion().getFriendlyString());
+            modObject.addProperty("name", iModInfo.getDisplayName());
+            modObject.addProperty("id", iModInfo.getModId());
+            modObject.addProperty("version", iModInfo.getVersion().toString());
             modsArray.add(modObject);
         });
         instanceJson.add("mods", modsArray);

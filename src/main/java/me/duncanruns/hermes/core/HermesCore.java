@@ -1,11 +1,17 @@
 package me.duncanruns.hermes.core;
 
 import com.google.gson.JsonObject;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -13,11 +19,43 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class HermesCore implements ModInitializer {
-    public static final Path GAME_DIR = FabricLoader.getInstance().getGameDir().normalize().toAbsolutePath();
+@Mod(HermesCore.MODID)
+public class HermesCore {
+    public static final String MODID = "hermescore";
+    public static final Path GAME_DIR = FMLPaths.GAMEDIR.get();
     public static final Path LOCAL_HERMES_FOLDER = GAME_DIR.resolve("hermes");
     public static final Path GLOBAL_HERMES_FOLDER = getGlobalPath();
-    public static final boolean IS_CLIENT = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
+    public static Boolean IS_CLIENT;
+
+    public static Boolean isClient() {
+        try {
+            Method method;
+            try {
+                method = FMLEnvironment.class.getDeclaredMethod("getDist");
+            } catch (NoSuchMethodException e) {
+                try {
+                    method = FMLLoader.class.getDeclaredMethod("getDist");
+                } catch (NoSuchMethodException ex) {
+                    return null;
+                }
+            }
+            method.setAccessible(true);
+            try {
+                return ((Dist) method.invoke(null)).isClient();
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to determine if client: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public HermesCore(IEventBus modEventBus) {
+        IS_CLIENT = isClient();
+        if (ModList.get().getModContainerById("hermes").isPresent()) return;
+        InstanceInfo.init();
+    }
 
     /**
      * @author me-nx, DuncanRuns
@@ -68,12 +106,6 @@ public class HermesCore implements ModInitializer {
             pid = -1;
         }
         return pid;
-    }
-
-    @Override
-    public void onInitialize() {
-        if (FabricLoader.getInstance().isModLoaded("hermes")) return;
-        InstanceInfo.init();
     }
 
     public static JsonObject pathToJsonObject(Path path) {

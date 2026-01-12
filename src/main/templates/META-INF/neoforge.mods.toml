@@ -1,0 +1,11 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "${mod_license}"
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+description = '''
+Constants and instance info functionality for Hermes
+'''
+logoFile = "hermes-core-logo.png"
