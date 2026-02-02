@@ -1,10 +1,9 @@
 package me.duncanruns.hermes.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModOrigin;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -12,6 +11,7 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -75,10 +75,25 @@ public final class InstanceInfo {
             modObject.addProperty("name", modContainer.getMetadata().getName());
             modObject.addProperty("id", modContainer.getMetadata().getId());
             modObject.addProperty("version", modContainer.getMetadata().getVersion().getFriendlyString());
+            modObject.add("origin", getOrigin(modContainer));
             modsArray.add(modObject);
         });
         instanceJson.add("mods", modsArray);
         return GSON.toJson(instanceJson);
+    }
+
+    private static JsonElement getOrigin(ModContainer modContainer) {
+        JsonObject out = new JsonObject();
+        out.addProperty("type", modContainer.getOrigin().getKind().toString());
+        if (modContainer.getOrigin().getKind() == ModOrigin.Kind.PATH) {
+            // Possibly breaks in later fabric loaders if they change string rep of ModOrigin
+            Path path = Paths.get(modContainer.getOrigin().toString());
+            JsonObject pathObj = HermesCore.pathToJsonObject(path);
+            out.add("value", pathObj);
+        } else {
+            out.addProperty("value", modContainer.getOrigin().toString());
+        }
+        return out;
     }
 
     private static Path getFilePath(Path folder, long pid) {
