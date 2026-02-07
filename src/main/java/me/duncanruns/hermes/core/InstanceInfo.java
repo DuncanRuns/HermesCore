@@ -11,7 +11,6 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -84,14 +83,18 @@ public final class InstanceInfo {
 
     private static JsonElement getOrigin(ModContainer modContainer) {
         JsonObject out = new JsonObject();
-        out.addProperty("type", modContainer.getOrigin().getKind().toString());
-        if (modContainer.getOrigin().getKind() == ModOrigin.Kind.PATH) {
-            // Possibly breaks in later fabric loaders if they change string rep of ModOrigin
-            Path path = Paths.get(modContainer.getOrigin().toString());
-            JsonObject pathObj = HermesCore.pathToJsonObject(path);
+        ModOrigin origin = modContainer.getOrigin();
+        out.addProperty("type", origin.getKind().toString());
+        if (origin.getKind() == ModOrigin.Kind.PATH) {
+            List<Path> paths = origin.getPaths();
+            if (paths.size() != 1) {
+                out.addProperty("value", origin.toString());
+                return out;
+            }
+            JsonObject pathObj = HermesCore.pathToJsonObject(paths.get(0));
             out.add("value", pathObj);
         } else {
-            out.addProperty("value", modContainer.getOrigin().toString());
+            out.addProperty("value", origin.toString());
         }
         return out;
     }
@@ -137,5 +140,4 @@ public final class InstanceInfo {
         if (disabledFeatures.contains(feature)) return;
         disabledFeatures.add(feature);
     }
-
 }
