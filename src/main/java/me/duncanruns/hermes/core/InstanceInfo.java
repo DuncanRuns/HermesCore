@@ -91,7 +91,7 @@ public final class InstanceInfo {
                 out.addProperty("value", origin.toString());
                 return out;
             }
-            JsonObject pathObj = HermesCore.pathToJsonObject(paths.get(0));
+            JsonObject pathObj = HermesCore.pathToJsonObject(paths.get(0).normalize().toAbsolutePath());
             out.add("value", pathObj);
         } else {
             out.addProperty("value", origin.toString());
