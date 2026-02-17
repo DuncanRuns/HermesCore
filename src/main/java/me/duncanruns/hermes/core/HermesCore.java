@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class HermesCore implements ModInitializer {
@@ -18,6 +20,9 @@ public class HermesCore implements ModInitializer {
     public static final Path LOCAL_HERMES_FOLDER = GAME_DIR.resolve("hermes");
     public static final Path GLOBAL_HERMES_FOLDER = getGlobalPath();
     public static final boolean IS_CLIENT = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
+
+    // Logger impl in mc versions varies, to be set by Hermes
+    public static BiConsumer<String, Throwable> ERROR_LOGGER = (s, t) -> System.err.println("(Hermes Core) " + s + " " + t);
 
     /**
      * @author me-nx, DuncanRuns
@@ -65,6 +70,7 @@ public class HermesCore implements ModInitializer {
         try {
             pid = getProcessId();
         } catch (Exception e) {
+            ERROR_LOGGER.accept("Failed to get process id.", e);
             pid = -1;
         }
         return pid;
@@ -72,6 +78,7 @@ public class HermesCore implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        Alive.init();
         if (FabricLoader.getInstance().isModLoaded("hermes")) return;
         InstanceInfo.init();
     }
