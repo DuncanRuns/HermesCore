@@ -74,8 +74,8 @@ public class HermesCore implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Alive.init();
         if (FabricLoader.getInstance().isModLoaded("hermes")) return;
+        Alive.init();
         InstanceInfo.init();
     }
 
