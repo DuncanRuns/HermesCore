@@ -56,11 +56,7 @@ public class HermesCore implements ModInitializer {
         String jvmName = ManagementFactory.getRuntimeMXBean().getName();
         int atIndex = jvmName.indexOf('@');
         if (atIndex > 0) {
-            try {
-                return Long.parseLong(jvmName.substring(0, atIndex));
-            } catch (NumberFormatException e) {
-                // Unexpected format, fallback
-            }
+            return Long.parseLong(jvmName.substring(0, atIndex));
         }
         throw new IllegalStateException("Unable to determine process ID from JVM name: " + jvmName);
     }
