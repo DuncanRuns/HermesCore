@@ -47,7 +47,7 @@ public final class Alive {
             file.writeLong(now);
             file.getChannel().force(false);
         } catch (Exception e) {
-            System.out.println("Failed to write alive file: " + e.getMessage());
+            HermesCore.ERROR_LOGGER.accept("Failed to write alive file.", e);
             close();
         }
     }
